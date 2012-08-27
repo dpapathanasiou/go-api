@@ -1,3 +1,8 @@
+// Package api provides a framework for creating HTTP servers in Go (http://golang.org/) to handle API requests capable of replying in xml, json, or any other valid content type.
+//
+// Build and install this package in your local environment, then import "api" into your own code.
+//
+// See https://github.com/dpapathanasiou/go-api/blob/master/README.md for more complete instructions and examples.
 
 package api
 

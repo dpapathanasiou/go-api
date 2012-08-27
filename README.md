@@ -83,7 +83,7 @@ With the handler function defined, the main() function of the code which has imp
 ```go
 func main() {
     // this line says that all requests to /hello/ will go to the helloWorldJSON(w http.ResponseWriter, r *http.Request) function:
-    api.RegisterHandler('hello', helloWorldJSON) 
+    api.RegisterHandler("hello", helloWorldJSON) 
     // add as many other handlers as you would like/need
 
     // now start the server on port 9001, using the default read timeout
