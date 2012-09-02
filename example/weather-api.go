@@ -21,7 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"github.com/dpapathanasiou/api"
+	"github.com/dpapathanasiou/go-api"
 )
 
 // The getWeather function accepts an http.ResponseWriter and http.Request object as input;
