@@ -5,7 +5,8 @@
 // The getWeather() function takes the NOAA station id for a given location (full list at http://w1.weather.gov/xml/current_obs/)
 // and returns the current weather conditions as an xml-formatted string.
 //
-// The weatherHandler() function ... (content-type: text/xml) format to the client.
+// Inside main(), getWeather is assigned to respond to requests where "/weather/" is found in the url from the client;
+// it will send its responses back in text/xml format, using utf-8, back to the client.
 //
 // This example server runs on port 9001, and so any request in the form:
 //
@@ -16,15 +17,20 @@
 package main
 
 import (
-	"api"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"github.com/dpapathanasiou/api"
 )
 
+// The getWeather function accepts an http.ResponseWriter and http.Request object as input;
+// the latter is used to find specific information about the client request, and how to process it.
+// The http.ResponseWriter is included if it's necessary to write additional headers to the reply,
+// beyond the Content-type and Content-length values provided automatically by the api package
+// (in this specific example, the http.ResponseWriter is not used).
 func getWeather(w http.ResponseWriter, r *http.Request) string {
-	xml := "<error>Bad Request</error>" // default response string
+	xml := "<error>Bad Request</error>" // the default response string
 	parts := strings.Split(r.URL.Path, "/")
 
 	if len(parts) < 3 {
@@ -64,6 +70,13 @@ func getWeather(w http.ResponseWriter, r *http.Request) string {
 	return xml
 }
 
+// The main function shows how to use the api package to handle different request patterns.
+// First, a map of type { string: func(http.ResponseWriter, *http.Request) } is created.
+// Next, the map is populated with pattern strings (as they as found in the request url), mapped
+// to the api.Respond function (which defines both the media type and the charset), which calls
+// the function which actually processes the client request, and returns a string in the expected 
+// format. This example defines just one pattern and response (i.e., "/weather/" returns an xml
+// reply in utf-8), but other patterns and response functions can be added to the multiplexer.
 func main() {
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
 	handlers["/weather/"] = func(w http.ResponseWriter, r *http.Request) {
