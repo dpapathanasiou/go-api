@@ -33,7 +33,7 @@ import (
     "fmt"
     "net/http"
     "encoding/json"
-    "github.com/dpapathanasiou/api"
+    "github.com/dpapathanasiou/go-api"
 )
 
 type Message struct {
