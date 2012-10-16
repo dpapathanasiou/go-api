@@ -10,7 +10,7 @@
 //
 // This example server runs on port 9001, and so any request in the form:
 //
-// http://[localhost/domain/ip of server]:9001/weather?q=[station id]&d=[hmac digest of "q" in sha1 with "key" as the key]
+// http://[localhost/domain/ip of server]:9001/weather?q=[station id]
 //
 // will work, as long as [station id] corresponds to a valid NOAA value.
 //
@@ -26,10 +26,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/dpapathanasiou/go-api"
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"github.com/dpapathanasiou/go-api"
 )
 
 // The getWeather function accepts an http.ResponseWriter and http.Request object as input;
@@ -40,28 +40,28 @@ import (
 func getWeather(w http.ResponseWriter, r *http.Request) string {
 	xml := "<error>Bad Request</error>" // the default response string
 
-    urlValues := r.URL.Query()
-    location  := urlValues.Get("q") // required
-    apiDigest := urlValues.Get("d") // optional: an hmac digest of "q" (the location) using sha1 with "secret" as the shared private key
-    sharedPrivateKey := "secret" // get this from a database, e.g., IRL
-    
-    validRequest := false
+	urlValues := r.URL.Query()
+	location := urlValues.Get("q")  // required
+	apiDigest := urlValues.Get("d") // optional: an hmac digest of "q" (the location) using sha1 with "secret" as the shared private key
+	sharedPrivateKey := "secret"    // get this from a database, e.g., IRL
+
+	validRequest := false
 	if len(location) == 0 {
 		// there is no location ("q") in the request url, so return an error message in xml
 		xml = "<error>Please specify a NOAA station id</error>"
 	} else {
-	    // If there is a digest as part of the request, check it using the shared private key
-	    if len(apiDigest) > 0 {
-	        if api.DigestMatches(sharedPrivateKey, location, apiDigest) {
-	            validRequest = true
-	        } else {
-	            xml = "<error>Your hmac digest is invalid</error>"
-	        }
-	    } else {
-	        validRequest = true
-	    }
+		// If there is a digest as part of the request, check it using the shared private key
+		if len(apiDigest) > 0 {
+			if api.DigestMatches(sharedPrivateKey, location, apiDigest) {
+				validRequest = true
+			} else {
+				xml = "<error>Your hmac digest is invalid</error>"
+			}
+		} else {
+			validRequest = true
+		}
 	}
-	
+
 	if validRequest {
 		// Use the location passed as "q" in the request url; it must be a valid NOAA station id, 
 		// as defined here: http://w1.weather.gov/xml/current_obs/
