@@ -5,14 +5,22 @@
 // The getWeather() function takes the NOAA station id for a given location (full list at http://w1.weather.gov/xml/current_obs/)
 // and returns the current weather conditions as an xml-formatted string.
 //
-// Inside main(), getWeather is assigned to respond to requests where "/weather/" is found in the url from the client;
+// Inside main(), getWeather is assigned to respond to requests where "/weather" is found in the url from the client;
 // it will send its responses back in text/xml format, using utf-8, back to the client.
 //
 // This example server runs on port 9001, and so any request in the form:
 //
-// http://[localhost/domain/ip of server]:9001/weather/[station id]
+// http://[localhost/domain/ip of server]:9001/weather?q=[station id]&d=[hmac digest of "q" in sha1 with "key" as the key]
 //
 // will work, as long as [station id] corresponds to a valid NOAA value.
+//
+// Optionally, the request can include an hmac digest for security:
+//
+// http://[localhost/domain/ip of server]:9001/weather?q=[station id]&d=[hmac digest of "q" in sha1 with a shared private key]
+//
+// The "d" parameter is a sha1 digest of the station id using "secret" as the shared private key in this example
+// (in practice, the private key is known only by the authorized api client and the server -- see 
+// http://en.wikipedia.org/wiki/Hmac for more details on how it works).
 
 package main
 
@@ -31,15 +39,32 @@ import (
 // (in this specific example, the http.ResponseWriter is not used).
 func getWeather(w http.ResponseWriter, r *http.Request) string {
 	xml := "<error>Bad Request</error>" // the default response string
-	parts := strings.Split(r.URL.Path, "/")
 
-	if len(parts) < 3 {
-		// there is nothing following /weather/ in the request url, so return an error message in xml
+    urlValues := r.URL.Query()
+    location  := urlValues.Get("q") // required
+    apiDigest := urlValues.Get("d") // optional: an hmac digest of "q" (the location) using sha1 with "secret" as the shared private key
+    sharedPrivateKey := "secret" // get this from a database, e.g., IRL
+    
+    validRequest := false
+	if len(location) == 0 {
+		// there is no location ("q") in the request url, so return an error message in xml
 		xml = "<error>Please specify a NOAA station id</error>"
 	} else {
-		// Use the string immediately following /weather/ in the request url as the location;
-		// the location must be a valid NOAA station id, as defined here: http://w1.weather.gov/xml/current_obs/
-		location := parts[2]
+	    // If there is a digest as part of the request, check it using the shared private key
+	    if len(apiDigest) > 0 {
+	        if api.DigestMatches(sharedPrivateKey, location, apiDigest) {
+	            validRequest = true
+	        } else {
+	            xml = "<error>Your hmac digest is invalid</error>"
+	        }
+	    } else {
+	        validRequest = true
+	    }
+	}
+	
+	if validRequest {
+		// Use the location passed as "q" in the request url; it must be a valid NOAA station id, 
+		// as defined here: http://w1.weather.gov/xml/current_obs/
 		res, err := http.Get(fmt.Sprintf("http://w1.weather.gov/xml/current_obs/%s.xml", location))
 		if err != nil {
 			api.Srv.Logger.Print(err)
@@ -75,11 +100,11 @@ func getWeather(w http.ResponseWriter, r *http.Request) string {
 // Next, the map is populated with pattern strings (as they as found in the request url), mapped
 // to the api.Respond function (which defines both the media type and the charset), which calls
 // the function which actually processes the client request, and returns a string in the expected 
-// format. This example defines just one pattern and response (i.e., "/weather/" returns an xml
+// format. This example defines just one pattern and response (i.e., "/weather" returns an xml
 // reply in utf-8), but other patterns and response functions can be added to the multiplexer.
 func main() {
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
-	handlers["/weather/"] = func(w http.ResponseWriter, r *http.Request) {
+	handlers["/weather"] = func(w http.ResponseWriter, r *http.Request) {
 		api.Respond("text/xml", "utf-8", getWeather)(w, r)
 	}
 

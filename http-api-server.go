@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+    "crypto/sha1"
+    "crypto/hmac"	
 )
 
 type Server struct {
@@ -20,6 +22,18 @@ var (
 	Srv                      *Server
 	DefaultServerReadTimeout = 30 // in seconds
 )
+
+// DigestMatches is an optional hmac check that can be applied to any or all api queries.
+// DigestMatches takes three strings: a private key, a query term, and a sha1 digest of the 
+// query term string using the shared private key known only by authorized api clients  
+// and this server (see http://en.wikipedia.org/wiki/Hmac for more details on how it works).
+// DigestMatches returns a boolean if the hmac digest is correct or not.
+func DigestMatches (privateKey string, queryTerm string, queryTermDigest string) bool {
+    h := hmac.New(sha1.New, []byte(privateKey))
+    h.Write([]byte(queryTerm))
+    hashed := fmt.Sprintf("%x", h.Sum(nil))
+    return ( hashed == queryTermDigest )
+}
 
 // Respond accepts an HTTP media type, charset, and a response function which returns a string.
 // Respond wraps the server reply in the correct Content-type, charset, and Content-length, 

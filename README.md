@@ -105,8 +105,14 @@ Run the server by invoking the executable:
 ./weather-api
 ```
 
-You can access the page from http://localhost:9001/weather/[station id] using curl, wget, or through a web browser (see http://w1.weather.gov/xml/current_obs/ for a full list of valid station id values).
+You can access the page from http://localhost:9001/weather?q=[station id] using curl, wget, or through a web browser (see http://w1.weather.gov/xml/current_obs/ for a full list of valid station id values).
 
-If the station id following /weather/ is valid, you will see the NOAA current conditions report in xml format, otherwise the API server will reply with an error message in xml.
+If the station id is valid, you will see the NOAA current conditions report in xml format, otherwise the API server will reply with an error message in xml.
+
+Optionally, you can add an hmac digest for security:
+
+http://[localhost/domain/ip of server]:9001/weather?q=[station id]&d=[hmac digest of "q" in sha1 with a shared private key]
+
+The "d" parameter is a sha1 digest of the station id using "secret" as the shared private key in this example (in practice, the private key is known only by the authorized api client and the server -- see http://en.wikipedia.org/wiki/Hmac for more details on how it works).
 
 While this server is trivial in that it is simple repeating the xml fed to it by the NOAA server, more complex replies are possible (e.g., fetch and return queries from a database, calculate analytics and return a summary, etc.).
