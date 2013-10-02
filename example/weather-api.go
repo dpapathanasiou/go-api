@@ -108,5 +108,5 @@ func main() {
 		api.Respond("text/xml", "utf-8", getWeather)(w, r)
 	}
 
-	api.NewServer(9001, api.DefaultServerReadTimeout, handlers)
+	api.NewServer(":9001", api.DefaultServerReadTimeout, handlers)
 }
