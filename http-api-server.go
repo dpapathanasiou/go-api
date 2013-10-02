@@ -52,7 +52,7 @@ func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r 
 // and their corresponding response functions. NewServer sets each map entry into the HTTP multiplexer,
 // then starts the HTTP server on the given port. The api.Server struct also provides a Logger for each
 // response function to use, to log warnings, errors, and other information.
-func NewServer(port int, timeout int, handlers map[string]func(http.ResponseWriter, *http.Request)) {
+func NewServer(bind string, timeout int, handlers map[string]func(http.ResponseWriter, *http.Request)) {
 
 	mux := http.NewServeMux()
 	for pattern, handler := range handlers {
@@ -60,7 +60,7 @@ func NewServer(port int, timeout int, handlers map[string]func(http.ResponseWrit
 	}
 
 	s := &http.Server{
-		Addr:        fmt.Sprintf(":%d", port),
+		Addr:        bind,
 		Handler:     mux,
 		ReadTimeout: time.Duration(timeout) * time.Second, // to prevent abuse of "keep-alive" requests by clients
 	}
