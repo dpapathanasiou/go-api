@@ -64,7 +64,7 @@ func main() {
 		api.Respond("application/json", "utf-8", helloWorldJSON)(w, r)
 	}
 
-	api.NewServer(9001, api.DefaultServerReadTimeout, handlers)
+	api.NewServer(":9001", api.DefaultServerReadTimeout, handlers)
 }
 ```
 
