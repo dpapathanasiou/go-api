@@ -64,7 +64,7 @@ func main() {
 		api.Respond("application/json", "utf-8", helloWorldJSON)(w, r)
 	}
 
-	api.NewServer(9001, api.DefaultServerReadTimeout, handlers)
+	api.NewServer("192.168.1.1", 9001, api.DefaultServerReadTimeout, handlers)
 }
 ```
 
@@ -77,13 +77,23 @@ http://[domain/ip of server]:[port]/[pattern]
 This particular server will reply to requests of the form:
 
 ```
-http://[domain/ip of server]:9001/hello/
+http://192.168.1.1:9001/hello/
 ```
 
 with this JSON:
 
 ```
 {"Text":"Hello World"}
+```
+
+If the server will run on the localhost and there is no ambiguity about the IP address or the hostname, then the <tt>NewLocalServer()</tt> function can be invoked instead, without the need to specify the IP address/hostname string: 
+
+```go
+func main() {
+	// [ handlers defined same as above ... ]
+
+	api.NewLocalServer(9001, api.DefaultServerReadTimeout, handlers)
+}
 ```
 
 Any undefined handlers (i.e., anything other than http://[domain/ip of server]:9001/hello/) get sent to the default handler, http.NotFound, and returns an HTTP 404.

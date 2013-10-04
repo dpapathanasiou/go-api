@@ -1,7 +1,7 @@
 // weather-api.go
 //
 // This is a simple example of how to use the api package.
-// 
+//
 // The getWeather() function takes the NOAA station id for a given location (full list at http://w1.weather.gov/xml/current_obs/)
 // and returns the current weather conditions as an xml-formatted string.
 //
@@ -19,7 +19,7 @@
 // http://[localhost/domain/ip of server]:9001/weather?q=[station id]&d=[hmac digest of "q" in sha1 with a shared private key]
 //
 // The "d" parameter is a sha1 digest of the station id using "secret" as the shared private key in this example
-// (in practice, the private key is known only by the authorized api client and the server -- see 
+// (in practice, the private key is known only by the authorized api client and the server -- see
 // http://en.wikipedia.org/wiki/Hmac for more details on how it works).
 
 package main
@@ -63,7 +63,7 @@ func getWeather(w http.ResponseWriter, r *http.Request) string {
 	}
 
 	if validRequest {
-		// Use the location passed as "q" in the request url; it must be a valid NOAA station id, 
+		// Use the location passed as "q" in the request url; it must be a valid NOAA station id,
 		// as defined here: http://w1.weather.gov/xml/current_obs/
 		res, err := http.Get(fmt.Sprintf("http://w1.weather.gov/xml/current_obs/%s.xml", location))
 		if err != nil {
@@ -99,7 +99,7 @@ func getWeather(w http.ResponseWriter, r *http.Request) string {
 // First, a map of type { string: func(http.ResponseWriter, *http.Request) } is created.
 // Next, the map is populated with pattern strings (as they as found in the request url), mapped
 // to the api.Respond function (which defines both the media type and the charset), which calls
-// the function which actually processes the client request, and returns a string in the expected 
+// the function which actually processes the client request, and returns a string in the expected
 // format. This example defines just one pattern and response (i.e., "/weather" returns an xml
 // reply in utf-8), but other patterns and response functions can be added to the multiplexer.
 func main() {
@@ -108,5 +108,7 @@ func main() {
 		api.Respond("text/xml", "utf-8", getWeather)(w, r)
 	}
 
-	api.NewServer(9001, api.DefaultServerReadTimeout, handlers)
+	api.NewLocalServer(9001, api.DefaultServerReadTimeout, handlers)
+	// To run the api server on a specific IP address, e.g., 192.168.1.1, use NewServer() instead:
+	//api.NewServer("192.168.1.1", 9001, api.DefaultServerReadTimeout, handlers)
 }
