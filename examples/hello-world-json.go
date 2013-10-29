@@ -1,0 +1,41 @@
+package main
+
+import (
+	"encoding/json"
+	"github.com/dpapathanasiou/go-api"
+	"net/http"
+)
+
+type Message struct {
+	Text string
+}
+
+// The helloWorldJSON function accepts an http.ResponseWriter and
+// http.Request object as input. For this simple example, which returns a
+// greeting in JSON format regardless of the request parameters, neither
+// input objects are used, but for more complex servers, the http.Request
+// object has several attributes which help inform what the exact reply
+// will be (see http://golang.org/pkg/net/http/#Request for the full list
+// of attributes). Similarly, the http.ResponseWriter object can be used
+// to write additional headers to the reply, beyond the Content-type and
+// Content-length values provided automatically by the api package.
+func helloWorldJSON(w http.ResponseWriter, r *http.Request) string {
+	m := Message{"Hello World"}
+	b, err := json.Marshal(m)
+	if err != nil {
+		panic(err) // no, not really
+	}
+
+	return string(b)
+}
+
+func main() {
+	handlers := map[string]func(http.ResponseWriter, *http.Request){}
+	handlers["/hello/"] = func(w http.ResponseWriter, r *http.Request) {
+		api.Respond("application/json", "utf-8", helloWorldJSON)(w, r)
+	}
+
+	api.NewLocalServer(9001, api.DefaultServerReadTimeout, handlers)
+	// To run the api server on a specific IP address, e.g., 192.168.1.1, use NewServer() instead:
+	//api.NewServer("192.168.1.1", 9001, api.DefaultServerReadTimeout, handlers)
+}

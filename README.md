@@ -23,14 +23,13 @@ To use it within your own code, import "github.com/dpapathanasiou/go-api" and de
 
 Where the string represents the url pattern string to match, and the corresponding function calls the api.Respond function (which defines both the media type and the charset), which in turn calls the function which actually processes the client request, returning a string in the expected format.
 
-Here's an example of how to send a "Hello World" message in JSON format in reply to a client request at /hello/
+Here's an example of how to send a "Hello World" message in JSON format in reply to a client request at /hello/ 
 
 ```go
 
 package main
 
 import (
-    "fmt"
     "net/http"
     "encoding/json"
     "github.com/dpapathanasiou/go-api"
@@ -98,10 +97,14 @@ func main() {
 
 Any undefined handlers (i.e., anything other than http://[domain/ip of server]:9001/hello/) get sent to the default handler, http.NotFound, and returns an HTTP 404.
 
-Usage Example
--------------
+The full listing for this example is in [examples/hello-world-json.go](https://github.com/dpapathanasiou/go-api/blob/master/examples/hello-world-json.go).
 
-This package contains a more complete example of how to build an API server which returns current weather conditions in xml format for valid NOAA locations.
+Other Usage Examples
+--------------------
+
+### [examples/weather-api.go](https://github.com/dpapathanasiou/go-api/blob/master/examples/weather-api.go)
+
+This is a more complete example, which creates an API server that returns current weather conditions in xml format for valid NOAA locations.
 
 Build the example server like this:
 
@@ -121,7 +124,9 @@ If the station id is valid, you will see the NOAA current conditions report in x
 
 Optionally, you can add an hmac digest for security:
 
+```
 http://[localhost/domain/ip of server]:9001/weather?q=[station id]&d=[hmac digest of "q" in sha1 with a shared private key]
+```
 
 The "d" parameter is a sha1 digest of the station id using "secret" as the shared private key in this example (in practice, the private key is known only by the authorized api client and the server -- see http://en.wikipedia.org/wiki/Hmac for more details on how it works).
 
