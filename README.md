@@ -102,9 +102,33 @@ The full listing for this example is in [examples/hello-world-json.go](https://g
 Other Usage Examples
 --------------------
 
+### [examples/get-request.go](https://github.com/dpapathanasiou/go-api/blob/master/examples/get-request.go)
+
+This example shows how to handle client API requests where data is sent to the server via an [HTTP GET](http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3) request, i.e., as name/value pairs encoded into the query string.
+
+### [examples/post-request.go](https://github.com/dpapathanasiou/go-api/blob/master/examples/post-request.go)
+
+This example shows how to handle client API requests where data is sent to the server via an [HTTP POST](http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.5) request.
+
+We can simulate the client POST request using [curl](http://curl.haxx.se/) on a command line prompt.
+
+Assuming <tt>post-request.go</tt> has been built and running on port 9001, we can test it like this:
+
+```
+$ curl -d "id=1&w=0&v=1199&a=381&wh=0&pcy=0&frq=599&va=458&rnc=0&sr=20" http://127.0.0.1:9001/logger
+```
+
+The server will respond with this JSON:
+
+```
+{"Status":"ok","Data":["v=1199","pcy=0","id=1","w=0","a=381","wh=0","frq=599","va=458","rnc=0","sr=20"]}
+```
+
 ### [examples/weather-api.go](https://github.com/dpapathanasiou/go-api/blob/master/examples/weather-api.go)
 
 This is a more complete example, which creates an API server that returns current weather conditions in xml format for valid NOAA locations.
+
+This server follows the HTTP GET request model from the <tt>get-request.go</tt> example, above.
 
 Build the example server like this:
 
