@@ -9,20 +9,24 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"net/http/fcgi"
 	"os"
 	"time"
 )
 
 type Server struct {
-	mux    *http.ServeMux
-	s      *http.Server
-	Logger *log.Logger
+	mux       *http.ServeMux
+	s         *http.Server
+	Logger    *log.Logger
+	Transport string
 }
 
 var (
 	Srv                      *Server
 	DefaultServerReadTimeout = 30 // in seconds
+	DefaultServerTransport   = "tcp"
 )
 
 // DigestMatches is an optional hmac check that can be applied to any or
@@ -59,7 +63,7 @@ func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r 
 // the HTTP multiplexer, then starts the HTTP server on the given host/ip
 // address and port. The api.Server struct also provides a Logger for each
 // response function to use, to log warnings, errors, and other information.
-func NewServer(host string, port int, timeout int, handlers map[string]func(http.ResponseWriter, *http.Request)) {
+func NewServer(host, transport string, port, timeout int, useFcgi bool, handlers map[string]func(http.ResponseWriter, *http.Request)) {
 
 	mux := http.NewServeMux()
 	for pattern, handler := range handlers {
@@ -73,18 +77,29 @@ func NewServer(host string, port int, timeout int, handlers map[string]func(http
 	}
 
 	Srv = &Server{
-		mux:    mux,
-		s:      s,
-		Logger: log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		mux:       mux,
+		s:         s,
+		Logger:    log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		Transport: transport,
 	}
-	Srv.s.ListenAndServe()
+
+	if useFcgi {
+		// create a listener for the incoming FastCGI requests
+		listener, err := net.Listen(Srv.Transport, Srv.s.Addr)
+		if err != nil {
+			Srv.Logger.Fatal(err)
+		}
+		fcgi.Serve(listener, Srv.mux)
+	} else {
+		// serve requests using the default http.Server
+		Srv.s.ListenAndServe()
+	}
 }
 
 // NewLocalServer takes a port number, read timeout (in secords), along with
 // a map defining url string patterns, and their corresponding response
 // functions. This function is a simpler alternative to NewServer, used
 // when the api server will be running on the localhost.
-func NewLocalServer(port int, timeout int, handlers map[string]func(http.ResponseWriter, *http.Request)) {
-	NewServer("", port, timeout, handlers)
+func NewLocalServer(transport string, port, timeout int, useFcgi bool, handlers map[string]func(http.ResponseWriter, *http.Request)) {
+	NewServer("", transport, port, timeout, useFcgi, handlers)
 }
-
