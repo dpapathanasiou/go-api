@@ -4,7 +4,7 @@ go-api
 About
 -----
 
-This package provides a framework for creating HTTP servers in Go (http://golang.org/) to handle API requests capable of replying in xml, json, or any other valid content type. 
+This package provides a framework for creating HTTP servers in [Go](http://golang.org/) under common [network transport layers](http://golang.org/pkg/net/#Dial) (tcp, udp, ip, unix) capable of handling API requests and replying in xml, json, or any other valid content type. 
 
 Usage
 -----
@@ -63,7 +63,7 @@ func main() {
 		api.Respond("application/json", "utf-8", helloWorldJSON)(w, r)
 	}
 
-	api.NewServer("192.168.1.1", 9001, api.DefaultServerReadTimeout, handlers)
+	api.NewServer("192.168.1.1", api.DefaultServerTransport, 9001, api.DefaultServerReadTimeout, false, handlers)
 }
 ```
 
@@ -91,7 +91,7 @@ If the server will run on the localhost and there is no ambiguity about the IP a
 func main() {
 	// [ handlers defined same as above ... ]
 
-	api.NewLocalServer(9001, api.DefaultServerReadTimeout, handlers)
+	api.NewLocalServer(api.DefaultServerTransport, 9001, api.DefaultServerReadTimeout, false, handlers)
 }
 ```
 

@@ -41,7 +41,7 @@ func logPostData(w http.ResponseWriter, r *http.Request) string {
 			buffer.WriteString(k)
 			buffer.WriteString("=")
 			buffer.WriteString(strings.Join(v, ","))
-			
+
 			postData = append(postData, buffer.String())
 			buffer.Reset()
 		}
@@ -62,7 +62,14 @@ func main() {
 		api.Respond("application/json", "utf-8", logPostData)(w, r)
 	}
 
-	api.NewLocalServer(9001, api.DefaultServerReadTimeout, handlers)
+	api.NewLocalServer(api.DefaultServerTransport, 9001, api.DefaultServerReadTimeout, false, handlers)
 	// To run the api server on a specific IP address, e.g., 192.168.1.1, use NewServer() instead:
-	//api.NewServer("192.168.1.1", 9001, api.DefaultServerReadTimeout, handlers)
+	//api.NewServer("192.168.1.1", api.DefaultServerTransport, 9001, api.DefaultServerReadTimeout, false, handlers)
+
+	// Another set of options are the transport layer (default is TCP) and FastCGI
+
+	// To run the api server as a UDP server on a specific IP address or domain, change the transport:
+	//api.NewServer("192.168.1.1", "udp", 9001, api.DefaultServerReadTimeout, false, handlers)
+	// The same example, but with FastCGI:
+	//api.NewServer("192.168.1.1", "udp", 9001, api.DefaultServerReadTimeout, true, handlers)
 }
